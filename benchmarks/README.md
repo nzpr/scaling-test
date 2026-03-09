@@ -45,7 +45,8 @@ Current defaults are intentionally stability-heavy for CE JVM:
 - `JMH_JVM_ARGS="-Xms4g -Xmx4g -XX:+UseG1GC"`
 
 CE JVM JMH output is written as JSON and normalized from raw iteration samples (`primaryMetric.rawData`), so plotted CE JVM curves are based on per-iteration values rather than only top-level aggregate score.
-Charts show both median and p95 per `(runtime, tasks)`.
+Charts use median per `(runtime, tasks)` by default.
+Use `--show-p95` with `plot.py` if you want p95 overlays.
 
 Outputs:
 - Raw per-runtime CSVs in `benchmarks/results/raw/`

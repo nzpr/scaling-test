@@ -46,6 +46,7 @@ def main():
     parser.add_argument("--output", required=True, help="Output PNG file path")
     parser.add_argument("--scale", choices=["linear", "log"], default="linear", help="Axis scale")
     parser.add_argument("--runtime", default=None, help="Filter to a single runtime label")
+    parser.add_argument("--show-p95", action="store_true", help="Overlay p95 in addition to median")
     args = parser.parse_args()
 
     rows = load_rows(args.input)
@@ -68,30 +69,34 @@ def main():
     for runtime in runtimes:
         tasks = sorted({task for r, task in grouped.keys() if r == runtime})
         medians = [statistics.median(grouped[(runtime, task)]) for task in tasks]
-        p95 = [percentile(grouped[(runtime, task)], 95) for task in tasks]
-
         (median_line,) = plt.plot(tasks, medians, marker="o", linewidth=2, label=f"{runtime} median")
-        plt.plot(
-            tasks,
-            p95,
-            marker="x",
-            linewidth=1.6,
-            linestyle="--",
-            color=median_line.get_color(),
-            alpha=0.8,
-            label=f"{runtime} p95",
-        )
+
+        if args.show_p95:
+            p95 = [percentile(grouped[(runtime, task)], 95) for task in tasks]
+            plt.plot(
+                tasks,
+                p95,
+                marker="x",
+                linewidth=1.6,
+                linestyle="--",
+                color=median_line.get_color(),
+                alpha=0.8,
+                label=f"{runtime} p95",
+            )
 
     title_runtime = args.runtime if args.runtime else "All Runtimes"
     title_scale = "Log Scale" if args.scale == "log" else "Linear Scale"
     plt.title(f"Stack-Safe Fibonacci Scheduling Scalability ({title_runtime}, {title_scale})")
     plt.xlabel("Number of Tasks")
-    plt.ylabel("Time Spent (ms/op, median and p95 of runs)")
+    if args.show_p95:
+        plt.ylabel("Time Spent (ms/op, median and p95 of runs)")
+    else:
+        plt.ylabel("Time Spent (ms/op, median of runs)")
     if args.scale == "log":
         plt.xscale("log", base=2)
         plt.yscale("log", base=10)
     plt.grid(True, alpha=0.3)
-    plt.legend(ncol=2, fontsize=9)
+    plt.legend(ncol=2 if args.show_p95 else 1, fontsize=9)
     plt.tight_layout()
     plt.savefig(args.output, dpi=160)
 
