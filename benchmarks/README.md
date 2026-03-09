@@ -36,6 +36,12 @@ You can tune JMH iterations/forks:
 WARMUP_ITERS=5 MEASURE_ITERS=8 FORKS=1 PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
 ```
 
+Current defaults are intentionally warmup-heavy to reduce flakiness:
+- `WARMUP_ITERS=6`
+- `WARMUP_TIME=2s`
+- `MEASURE_ITERS=6`
+- `MEASURE_TIME=1s`
+
 Outputs:
 - Raw per-runtime CSVs in `benchmarks/results/raw/`
 - Combined CSV: `benchmarks/results/raw/all.csv`
