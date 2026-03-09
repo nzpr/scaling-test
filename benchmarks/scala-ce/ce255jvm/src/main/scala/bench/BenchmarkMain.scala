@@ -18,6 +18,10 @@ object BenchmarkMain extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     BenchmarkCli.parseArgs(args, DefaultConfig) match {
       case Left(err)  => IO(println(s"error: $err")).as(ExitCode.Error)
-      case Right(cfg) => BenchmarkRunner.run(cfg, Workload.runBatchParallel)
+      case Right(cfg) =>
+        for {
+          _ <- BenchmarkRunner.run(cfg.copy(runtimeLabel = s"${cfg.runtimeLabel}-parallel"), Workload.runBatchParallel)
+          _ <- BenchmarkRunner.run(cfg.copy(runtimeLabel = s"${cfg.runtimeLabel}-concurrent"), Workload.runBatchConcurrent)
+        } yield ExitCode.Success
     }
 }

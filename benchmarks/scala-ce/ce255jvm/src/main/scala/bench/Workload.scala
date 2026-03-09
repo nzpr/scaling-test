@@ -26,10 +26,13 @@ object Workload {
       .parTraverse(_ => fibStackSafe(fibN, yieldEvery))
       .map(_.foldLeft(0L)(_ ^ _))
 
-  def runBatchConcurrent(tasks: Int, fibN: Int, yieldEvery: Int)(implicit C: Concurrent[IO]): IO[Long] =
+  def runBatchConcurrent(tasks: Int, fibN: Int, yieldEvery: Int): IO[Long] = {
+    implicit val concurrentIO: Concurrent[IO] = IO.ioConcurrentEffect
+
     Vector
       .fill(tasks)(())
-      .traverse(_ => C.start(fibStackSafe(fibN, yieldEvery)))
+      .traverse(_ => concurrentIO.start(fibStackSafe(fibN, yieldEvery)))
       .flatMap(_.traverse(_.join))
       .map(_.foldLeft(0L)(_ ^ _))
+  }
 }

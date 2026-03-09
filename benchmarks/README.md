@@ -35,8 +35,11 @@ Outputs:
 - Combined charts:
   - `benchmarks/results/time-vs-tasks.png` (linear)
   - `benchmarks/results/time-vs-tasks-log.png` (log)
-- Per-runtime charts (each in linear + log):
-  - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm*.png`
-  - `benchmarks/results/time-vs-tasks-ce3.7.0-jvm*.png`
-  - `benchmarks/results/time-vs-tasks-ce3.7.0-native*.png`
-  - `benchmarks/results/time-vs-tasks-tokio-rust*.png`
+- Per-runtime charts (linear only; expected 7 series = rust + 3 parallel + 3 concurrent):
+  - `benchmarks/results/time-vs-tasks-tokio-rust.png`
+  - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm-parallel.png`
+  - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm-concurrent.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-jvm-parallel.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-jvm-concurrent.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-native-parallel.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-native-concurrent.png`

@@ -81,15 +81,11 @@ done
 python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks.png"
 python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks-log.png" --scale log
 
-for runtime in ce2.5.5-jvm ce3.7.0-jvm ce3.7.0-native tokio-rust; do
+mapfile -t runtime_labels < <(tail -n +2 "$ALL_CSV" | cut -d, -f1 | sort -u)
+for runtime in "${runtime_labels[@]}"; do
   python3 "$ROOT/plot.py" \
     --input "$ALL_CSV" \
     --output "$ROOT/results/time-vs-tasks-${runtime}.png" \
-    --runtime "$runtime"
-  python3 "$ROOT/plot.py" \
-    --input "$ALL_CSV" \
-    --output "$ROOT/results/time-vs-tasks-${runtime}-log.png" \
-    --scale log \
     --runtime "$runtime"
 done
 
