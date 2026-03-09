@@ -1,5 +1,7 @@
 # Scheduling Scalability: Cats Effect vs Tokio
 
+Started here https://x.com/JustDeezGuy/status/2030798686955925856
+
 This repository benchmarks scheduler scalability using the same stack-safe Fibonacci workload across:
 - Cats Effect 2.x on JVM (`ce2.5.5-jvm`)
 - Cats Effect 3.7.0 on JVM (`ce3.7.0-jvm`)
