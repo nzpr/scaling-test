@@ -1,0 +1,11 @@
+runtime,tasks,run,elapsed_ms,checksum,fib_n,yield_every
+tokio-rust,128,1,0.491,0,2048,64
+tokio-rust,128,2,0.549,0,2048,64
+tokio-rust,256,1,0.908,0,2048,64
+tokio-rust,256,2,1.296,0,2048,64
+tokio-rust,512,1,2.580,0,2048,64
+tokio-rust,512,2,1.426,0,2048,64
+tokio-rust,1024,1,2.608,0,2048,64
+tokio-rust,1024,2,2.608,0,2048,64
+tokio-rust,2048,1,7.166,0,2048,64
+tokio-rust,2048,2,4.194,0,2048,64

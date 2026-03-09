@@ -1,0 +1,12 @@
+.codex_session
+.jim/
+AGENTS.md
+docs/adr/
+docs/decisions/
+docs/playbooks/
+evolution/
+.env
+.DS_Store
+.venv/
+**/target/
+benchmarks/results/smoke/
