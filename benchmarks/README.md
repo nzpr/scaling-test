@@ -32,4 +32,11 @@ TASKS=1024,2048,4096,8192 FIB_N=4096 YIELD_EVERY=64 REPEATS=3 PATH="$PWD/.venv/b
 Outputs:
 - Raw per-runtime CSVs in `benchmarks/results/raw/`
 - Combined CSV: `benchmarks/results/raw/all.csv`
-- Chart: `benchmarks/results/time-vs-tasks.png`
+- Combined charts:
+  - `benchmarks/results/time-vs-tasks.png` (linear)
+  - `benchmarks/results/time-vs-tasks-log.png` (log)
+- Per-runtime charts (each in linear + log):
+  - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm*.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-jvm*.png`
+  - `benchmarks/results/time-vs-tasks-ce3.7.0-native*.png`
+  - `benchmarks/results/time-vs-tasks-tokio-rust*.png`

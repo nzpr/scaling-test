@@ -26,9 +26,16 @@ def main():
     parser = argparse.ArgumentParser(description="Plot time-vs-tasks benchmark results")
     parser.add_argument("--input", required=True, help="Input CSV with benchmark rows")
     parser.add_argument("--output", required=True, help="Output PNG file path")
+    parser.add_argument("--scale", choices=["linear", "log"], default="linear", help="Axis scale")
+    parser.add_argument("--runtime", default=None, help="Filter to a single runtime label")
     args = parser.parse_args()
 
     rows = load_rows(args.input)
+    if args.runtime:
+        rows = [row for row in rows if row["runtime"] == args.runtime]
+        if not rows:
+            raise SystemExit(f"no rows found for runtime={args.runtime}")
+
     grouped = defaultdict(list)
     runtimes = []
 
@@ -45,9 +52,14 @@ def main():
         medians = [statistics.median(grouped[(runtime, task)]) for task in tasks]
         plt.plot(tasks, medians, marker="o", linewidth=2, label=runtime)
 
-    plt.title("Stack-Safe Fibonacci Scheduling Scalability")
+    title_runtime = args.runtime if args.runtime else "All Runtimes"
+    title_scale = "Log Scale" if args.scale == "log" else "Linear Scale"
+    plt.title(f"Stack-Safe Fibonacci Scheduling Scalability ({title_runtime}, {title_scale})")
     plt.xlabel("Number of Tasks")
     plt.ylabel("Time Spent (ms, median of repeats)")
+    if args.scale == "log":
+        plt.xscale("log", base=2)
+        plt.yscale("log", base=10)
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()

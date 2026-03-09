@@ -36,7 +36,7 @@ run_ce_native() {
   rm -f "$out_file"
   (
     cd "$SCALA_DIR"
-    sbt --batch "$project/nativeLink"
+    LLVM_BIN="${LLVM_BIN:-/usr/bin}" sbt --batch "$project/nativeLink"
   )
 
   "$native_bin" \
@@ -79,6 +79,20 @@ for runtime in ce2.5.5-jvm ce3.7.0-jvm ce3.7.0-native tokio-rust; do
 done
 
 python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks.png"
+python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks-log.png" --scale log
+
+for runtime in ce2.5.5-jvm ce3.7.0-jvm ce3.7.0-native tokio-rust; do
+  python3 "$ROOT/plot.py" \
+    --input "$ALL_CSV" \
+    --output "$ROOT/results/time-vs-tasks-${runtime}.png" \
+    --runtime "$runtime"
+  python3 "$ROOT/plot.py" \
+    --input "$ALL_CSV" \
+    --output "$ROOT/results/time-vs-tasks-${runtime}-log.png" \
+    --scale log \
+    --runtime "$runtime"
+done
 
 echo "raw_csv=$ALL_CSV"
-echo "chart=$ROOT/results/time-vs-tasks.png"
+echo "chart_linear=$ROOT/results/time-vs-tasks.png"
+echo "chart_log=$ROOT/results/time-vs-tasks-log.png"
