@@ -25,6 +25,19 @@ Concurrency pattern:
 - Spawn all tasks eagerly
 - Join all tasks
 
+Latest full-suite command:
+
+```bash
+cd benchmarks
+TASKS='128,256,512,1024,2048' FIB_N=2048 REPEATS=2 YIELD_EVERY=64 PYTHON_BIN="$PWD/.venv/bin/python" PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
+```
+
+Rust fallback command used when crates.io was unavailable in this environment:
+
+```bash
+./tokio-rust/target/release/tokio-rust-bench --runtime tokio-rust --tasks 128,256,512,1024,2048 --fib 2048 --yield-every 64 --repeats 2 --warmup true --output /workspace/benchmarks/results/raw/tokio-rust.csv
+```
+
 ## Why Results Are Representative (Semantic Parity)
 The benchmark keeps semantics aligned across runtimes:
 
@@ -41,6 +54,11 @@ Exact strategy call sites:
 - CE3 Native `Parallel` (shared CE3 workload): [benchmarks/scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L23](benchmarks/scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L23)
 - CE3 Native `Concurrent` (shared CE3 workload): [benchmarks/scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L31](benchmarks/scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L31)
 - Tokio spawn/join: [benchmarks/tokio-rust/src/main.rs#L54](benchmarks/tokio-rust/src/main.rs#L54), [benchmarks/tokio-rust/src/main.rs#L58](benchmarks/tokio-rust/src/main.rs#L58)
+
+Yield call sites:
+- CE2 `IO.shift`: [benchmarks/scala-ce/ce255jmh/src/main/scala/bench/jmh/CE25SchedulerBenchmark.scala#L32](benchmarks/scala-ce/ce255jmh/src/main/scala/bench/jmh/CE25SchedulerBenchmark.scala#L32)
+- CE3 `IO.cede`: [benchmarks/scala-ce/ce370jmh/src/main/scala/bench/jmh/CE37SchedulerBenchmark.scala#L29](benchmarks/scala-ce/ce370jmh/src/main/scala/bench/jmh/CE37SchedulerBenchmark.scala#L29)
+- Tokio `yield_now`: [benchmarks/tokio-rust/src/main.rs#L40](benchmarks/tokio-rust/src/main.rs#L40)
 
 Shared Scala code (avoids duplication):
 - Shared runner: [benchmarks/scala-ce/shared/src/main/scala/bench/BenchmarkRunner.scala](benchmarks/scala-ce/shared/src/main/scala/bench/BenchmarkRunner.scala)
@@ -92,6 +110,17 @@ Per series (linear):
 - [ce3.7.0-native-parallel](benchmarks/results/time-vs-tasks-ce3.7.0-native-parallel.png)
 - [ce3.7.0-native-concurrent](benchmarks/results/time-vs-tasks-ce3.7.0-native-concurrent.png)
 
+## Artifacts
+- Combined CSV: [benchmarks/results/raw/all.csv](benchmarks/results/raw/all.csv)
+- CE2 JMH raw JSON: [benchmarks/results/raw/ce2.5.5-jvm-jmh-raw.json](benchmarks/results/raw/ce2.5.5-jvm-jmh-raw.json)
+- CE3 JMH raw JSON: [benchmarks/results/raw/ce3.7.0-jvm-jmh-raw.json](benchmarks/results/raw/ce3.7.0-jvm-jmh-raw.json)
+
+## Environment (Latest Run)
+- Host: `Linux 41aaa1a2113a 6.10.14-linuxkit #1 SMP Fri Nov 29 17:22:03 UTC 2024 aarch64 aarch64 aarch64 GNU/Linux`
+- Java: `OpenJDK 21.0.10`
+- SBT: `1.12.5`
+- Rust: `rustc 1.94.0`, `cargo 1.94.0`
+
 ## Reproduce
 ```bash
 cd benchmarks
@@ -99,6 +128,3 @@ python3 -m venv .venv
 .venv/bin/pip install matplotlib
 PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
 ```
-
-For presentation-focused detail (extended methodology + notes), see:
-- [benchmarks/README_PRESENTATION.md](benchmarks/README_PRESENTATION.md)
