@@ -33,17 +33,23 @@ TASKS=1024,2048,4096,8192 FIB_N=4096 YIELD_EVERY=64 REPEATS=3 PATH="$PWD/.venv/b
 You can tune JMH iterations/forks:
 
 ```bash
-WARMUP_ITERS=5 MEASURE_ITERS=8 FORKS=1 PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
+WARMUP_ITERS=5 MEASURE_ITERS=8 FORKS=3 MEASURE_TIME=2s PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
 ```
 
-Current defaults are intentionally warmup-heavy to reduce flakiness:
-- `WARMUP_ITERS=6`
+Current defaults are intentionally stability-heavy for CE JVM:
+- `WARMUP_ITERS=8`
 - `WARMUP_TIME=2s`
-- `MEASURE_ITERS=6`
-- `MEASURE_TIME=1s`
+- `MEASURE_ITERS=8`
+- `MEASURE_TIME=2s`
+- `FORKS=3`
+- `JMH_JVM_ARGS="-Xms4g -Xmx4g -XX:+UseG1GC"`
+
+CE JVM JMH output is written as JSON and normalized from raw iteration samples (`primaryMetric.rawData`), so plotted CE JVM curves are based on per-iteration values rather than only top-level aggregate score.
+Charts show both median and p95 per `(runtime, tasks)`.
 
 Outputs:
 - Raw per-runtime CSVs in `benchmarks/results/raw/`
+- Raw JMH JSON files for CE JVM in `benchmarks/results/raw/*-jmh-raw.json`
 - Combined CSV: `benchmarks/results/raw/all.csv`
 - Combined charts:
   - `benchmarks/results/time-vs-tasks.png` (linear)

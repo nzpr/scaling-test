@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import csv
+import math
 import statistics
 from collections import defaultdict
 
@@ -20,6 +21,23 @@ def load_rows(path):
                 }
             )
     return rows
+
+
+def percentile(values, p):
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("cannot compute percentile of empty list")
+    if len(ordered) == 1:
+        return ordered[0]
+
+    rank = (p / 100.0) * (len(ordered) - 1)
+    lower = math.floor(rank)
+    upper = math.ceil(rank)
+    if lower == upper:
+        return ordered[lower]
+
+    weight = rank - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
 
 
 def main():
@@ -50,18 +68,30 @@ def main():
     for runtime in runtimes:
         tasks = sorted({task for r, task in grouped.keys() if r == runtime})
         medians = [statistics.median(grouped[(runtime, task)]) for task in tasks]
-        plt.plot(tasks, medians, marker="o", linewidth=2, label=runtime)
+        p95 = [percentile(grouped[(runtime, task)], 95) for task in tasks]
+
+        (median_line,) = plt.plot(tasks, medians, marker="o", linewidth=2, label=f"{runtime} median")
+        plt.plot(
+            tasks,
+            p95,
+            marker="x",
+            linewidth=1.6,
+            linestyle="--",
+            color=median_line.get_color(),
+            alpha=0.8,
+            label=f"{runtime} p95",
+        )
 
     title_runtime = args.runtime if args.runtime else "All Runtimes"
     title_scale = "Log Scale" if args.scale == "log" else "Linear Scale"
     plt.title(f"Stack-Safe Fibonacci Scheduling Scalability ({title_runtime}, {title_scale})")
     plt.xlabel("Number of Tasks")
-    plt.ylabel("Time Spent (ms, median of repeats)")
+    plt.ylabel("Time Spent (ms/op, median and p95 of runs)")
     if args.scale == "log":
         plt.xscale("log", base=2)
         plt.yscale("log", base=10)
     plt.grid(True, alpha=0.3)
-    plt.legend()
+    plt.legend(ncol=2, fontsize=9)
     plt.tight_layout()
     plt.savefig(args.output, dpi=160)
 

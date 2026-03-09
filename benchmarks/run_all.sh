@@ -13,11 +13,13 @@ YIELD_EVERY="${YIELD_EVERY:-64}"
 REPEATS="${REPEATS:-3}"
 WARMUP="${WARMUP:-true}"
 
-WARMUP_ITERS="${WARMUP_ITERS:-6}"
+WARMUP_ITERS="${WARMUP_ITERS:-8}"
 WARMUP_TIME="${WARMUP_TIME:-2s}"
-MEASURE_ITERS="${MEASURE_ITERS:-6}"
-MEASURE_TIME="${MEASURE_TIME:-1s}"
-FORKS="${FORKS:-1}"
+MEASURE_ITERS="${MEASURE_ITERS:-8}"
+MEASURE_TIME="${MEASURE_TIME:-2s}"
+FORKS="${FORKS:-3}"
+JMH_JVM_ARGS="${JMH_JVM_ARGS:--Xms4g -Xmx4g -XX:+UseG1GC}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 mkdir -p "$OUT_DIR"
 
@@ -38,17 +40,29 @@ run_ce_jmh() {
   local project="$1"
   local runtime_label="$2"
   local benchmark_class="$3"
-  local raw_file="$OUT_DIR/${runtime_label}-jmh-raw.csv"
+  local raw_file="$OUT_DIR/${runtime_label}-jmh-raw.json"
   local out_file="$OUT_DIR/${runtime_label}.csv"
+  local -a jvm_args=()
+  local jvm_args_flags=""
+  local jvm_arg
+  local jmh_cmd
+
+  if [[ -n "$JMH_JVM_ARGS" ]]; then
+    read -r -a jvm_args <<< "$JMH_JVM_ARGS"
+    for jvm_arg in "${jvm_args[@]}"; do
+      jvm_args_flags="$jvm_args_flags -jvmArgsAppend $jvm_arg"
+    done
+  fi
+
+  jmh_cmd="$project/Jmh/run -bm avgt -tu ms -wi $WARMUP_ITERS -i $MEASURE_ITERS -w $WARMUP_TIME -r $MEASURE_TIME -f $FORKS -rf json -rff $raw_file -p tasks=$TASKS -p fibN=$FIB_N -p yieldEvery=$YIELD_EVERY $jvm_args_flags $benchmark_class"
 
   rm -f "$raw_file" "$out_file"
   (
     cd "$SCALA_DIR"
-    sbt --batch \
-      "$project/Jmh/run -bm avgt -tu ms -wi $WARMUP_ITERS -i $MEASURE_ITERS -w $WARMUP_TIME -r $MEASURE_TIME -f $FORKS -rf csv -rff $raw_file -p tasks=$TASKS -p fibN=$FIB_N -p yieldEvery=$YIELD_EVERY $benchmark_class"
+    sbt --batch "$jmh_cmd"
   )
 
-  python3 "$ROOT/jmh_to_rows.py" --input "$raw_file" --output "$out_file" --runtime "$runtime_label"
+  "$PYTHON_BIN" "$ROOT/jmh_to_rows.py" --input "$raw_file" --output "$out_file" --runtime "$runtime_label"
 }
 
 run_ce_native() {
@@ -108,12 +122,12 @@ for runtime in ce2.5.5-jvm ce3.7.0-jvm ce3.7.0-native tokio-rust; do
   tail -n +2 "$OUT_DIR/${runtime}.csv" >> "$ALL_CSV"
 done
 
-python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks.png"
-python3 "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks-log.png" --scale log
+"$PYTHON_BIN" "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks.png"
+"$PYTHON_BIN" "$ROOT/plot.py" --input "$ALL_CSV" --output "$ROOT/results/time-vs-tasks-log.png" --scale log
 
 mapfile -t runtime_labels < <(tail -n +2 "$ALL_CSV" | cut -d, -f1 | sort -u)
 for runtime in "${runtime_labels[@]}"; do
-  python3 "$ROOT/plot.py" \
+  "$PYTHON_BIN" "$ROOT/plot.py" \
     --input "$ALL_CSV" \
     --output "$ROOT/results/time-vs-tasks-${runtime}.png" \
     --runtime "$runtime"
