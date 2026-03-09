@@ -63,6 +63,36 @@ Yield call sites:
 - CE native and Tokio rows are from benchmark repeats (`2` per task in this run).
 - Charts in `results/` are currently **median-only**.
 
+## Why This Is Representative (Semantic Parity)
+The benchmark was designed so each runtime executes the same logical workload and scheduling shape:
+
+- Same algorithm: iterative, stack-safe Fibonacci loop in every implementation.
+  - CE2 loop: [scala-ce/ce255jvm/src/main/scala/bench/Workload.scala#L11](scala-ce/ce255jvm/src/main/scala/bench/Workload.scala#L11)
+  - CE3 loop (shared for CE3 app/native): [scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L8](scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L8)
+  - Tokio loop: [tokio-rust/src/main.rs#L34](tokio-rust/src/main.rs#L34)
+
+- Same cooperative-yield policy: yield every `yieldEvery` iterations.
+  - CE2: `IO.shift` [scala-ce/ce255jvm/src/main/scala/bench/Workload.scala#L16](scala-ce/ce255jvm/src/main/scala/bench/Workload.scala#L16)
+  - CE3: `IO.cede` [scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L13](scala-ce/ce370shared/src/main/scala/bench/Workload.scala#L13)
+  - Tokio: `yield_now` [tokio-rust/src/main.rs#L40](tokio-rust/src/main.rs#L40)
+
+- Same concurrency shape: create all tasks first, then await all.
+  - CE `Parallel`: `parTraverse` call sites (listed above).
+  - CE `Concurrent`: `start` + `join`/`joinWithNever` call sites (listed above).
+  - Tokio: `JoinSet::spawn` then `join_next` [tokio-rust/src/main.rs#L54](tokio-rust/src/main.rs#L54), [tokio-rust/src/main.rs#L58](tokio-rust/src/main.rs#L58)
+
+- Same input parameterization and CSV schema across runtimes:
+  - `tasks`, `fib_n`, `yield_every`, `runtime`, `elapsed_ms` columns
+  - Shared Scala runner for app/native: [scala-ce/shared/src/main/scala/bench/BenchmarkRunner.scala](scala-ce/shared/src/main/scala/bench/BenchmarkRunner.scala)
+
+- Same result-consumption intent (avoid eliding work):
+  - CE JMH benchmark methods return `Long` to JMH (captured as benchmark output).
+  - Native/Tokio explicitly compute and emit XOR checksum across task results.
+
+What is intentionally different:
+- CE JVM is measured with JMH (fork/warmup/measurement iterations), while native/Tokio use repeated wall-clock batch timing.
+- This makes **within-engine comparisons** very robust (CE2 vs CE3 JVM, parallel vs concurrent), while cross-engine comparisons should still be interpreted with normal harness caveats.
+
 ## Results (Median ms/op)
 Source: [results/raw/all.csv](results/raw/all.csv)
 
