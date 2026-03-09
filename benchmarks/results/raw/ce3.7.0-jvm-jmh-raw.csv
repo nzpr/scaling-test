@@ -1,0 +1,11 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit","Param: fibN","Param: tasks","Param: yieldEvery"
+"bench.jmh.CE37SchedulerBenchmark.concurrent","avgt",1,4,1.603495,1.853471,"ms/op",2048,128,64
+"bench.jmh.CE37SchedulerBenchmark.concurrent","avgt",1,4,2.988492,6.231916,"ms/op",2048,256,64
+"bench.jmh.CE37SchedulerBenchmark.concurrent","avgt",1,4,5.776932,5.113400,"ms/op",2048,512,64
+"bench.jmh.CE37SchedulerBenchmark.concurrent","avgt",1,4,11.887793,23.565405,"ms/op",2048,1024,64
+"bench.jmh.CE37SchedulerBenchmark.concurrent","avgt",1,4,124.081356,535.833069,"ms/op",2048,2048,64
+"bench.jmh.CE37SchedulerBenchmark.parallel","avgt",1,4,1.889510,3.866026,"ms/op",2048,128,64
+"bench.jmh.CE37SchedulerBenchmark.parallel","avgt",1,4,3.146147,6.215745,"ms/op",2048,256,64
+"bench.jmh.CE37SchedulerBenchmark.parallel","avgt",1,4,6.710731,7.813303,"ms/op",2048,512,64
+"bench.jmh.CE37SchedulerBenchmark.parallel","avgt",1,4,13.646713,32.068407,"ms/op",2048,1024,64
+"bench.jmh.CE37SchedulerBenchmark.parallel","avgt",1,4,29.623080,134.745866,"ms/op",2048,2048,64

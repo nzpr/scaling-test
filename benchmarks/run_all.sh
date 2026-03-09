@@ -6,11 +6,18 @@ SCALA_DIR="$ROOT/scala-ce"
 RUST_DIR="$ROOT/tokio-rust"
 OUT_DIR="${1:-$ROOT/results/raw}"
 
+CE_JVM_ENGINE="${CE_JVM_ENGINE:-jmh}"
 TASKS="${TASKS:-512,1024,2048,4096,8192,16384}"
 FIB_N="${FIB_N:-4096}"
 YIELD_EVERY="${YIELD_EVERY:-64}"
 REPEATS="${REPEATS:-3}"
 WARMUP="${WARMUP:-true}"
+
+WARMUP_ITERS="${WARMUP_ITERS:-4}"
+WARMUP_TIME="${WARMUP_TIME:-1s}"
+MEASURE_ITERS="${MEASURE_ITERS:-6}"
+MEASURE_TIME="${MEASURE_TIME:-1s}"
+FORKS="${FORKS:-1}"
 
 mkdir -p "$OUT_DIR"
 
@@ -25,6 +32,23 @@ run_ce_project() {
     sbt --batch \
       "$project/runMain bench.BenchmarkMain --runtime $runtime_label --tasks $TASKS --fib $FIB_N --yield-every $YIELD_EVERY --repeats $REPEATS --warmup $WARMUP --output $out_file"
   )
+}
+
+run_ce_jmh() {
+  local project="$1"
+  local runtime_label="$2"
+  local benchmark_class="$3"
+  local raw_file="$OUT_DIR/${runtime_label}-jmh-raw.csv"
+  local out_file="$OUT_DIR/${runtime_label}.csv"
+
+  rm -f "$raw_file" "$out_file"
+  (
+    cd "$SCALA_DIR"
+    sbt --batch \
+      "$project/Jmh/run -bm avgt -tu ms -wi $WARMUP_ITERS -i $MEASURE_ITERS -w $WARMUP_TIME -r $MEASURE_TIME -f $FORKS -rf csv -rff $raw_file -p tasks=$TASKS -p fibN=$FIB_N -p yieldEvery=$YIELD_EVERY $benchmark_class"
+  )
+
+  python3 "$ROOT/jmh_to_rows.py" --input "$raw_file" --output "$out_file" --runtime "$runtime_label"
 }
 
 run_ce_native() {
@@ -67,8 +91,14 @@ run_rust() {
   )
 }
 
-run_ce_project ce255jvm ce2.5.5-jvm
-run_ce_project ce370jvm ce3.7.0-jvm
+if [[ "$CE_JVM_ENGINE" == "jmh" ]]; then
+  run_ce_jmh ce255jmh ce2.5.5-jvm bench.jmh.CE25SchedulerBenchmark
+  run_ce_jmh ce370jmh ce3.7.0-jvm bench.jmh.CE37SchedulerBenchmark
+else
+  run_ce_project ce255jvm ce2.5.5-jvm
+  run_ce_project ce370jvm ce3.7.0-jvm
+fi
+
 run_ce_native
 run_rust
 

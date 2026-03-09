@@ -1,4 +1,5 @@
 import scala.scalanative.sbtplugin.ScalaNativePlugin
+import pl.project13.scala.sbt.JmhPlugin
 
 ThisBuild / scalaVersion := "2.13.16"
 ThisBuild / organization := "bench"
@@ -35,6 +36,27 @@ lazy val ce370jvm =
         "org.scalameta" %% "munit" % "1.2.1" % Test
       ),
       allowUnsafeScalaLibUpgrade := true
+    )
+
+lazy val ce255jmh =
+  Project("ce255jmh", file("ce255jmh"))
+    .enablePlugins(JmhPlugin)
+    .settings(commonSettings)
+    .settings(
+      name := "ce255jmh",
+      libraryDependencies += "org.typelevel" %% "cats-effect" % "2.5.5",
+      Jmh / fork := true
+    )
+
+lazy val ce370jmh =
+  Project("ce370jmh", file("ce370jmh"))
+    .enablePlugins(JmhPlugin)
+    .settings(commonSettings)
+    .settings(
+      name := "ce370jmh",
+      libraryDependencies += "org.typelevel" %% "cats-effect" % "3.7.0",
+      allowUnsafeScalaLibUpgrade := true,
+      Jmh / fork := true
     )
 
 lazy val ce370native =

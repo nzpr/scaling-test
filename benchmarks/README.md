@@ -29,13 +29,20 @@ Tune sweep parameters via environment variables:
 TASKS=1024,2048,4096,8192 FIB_N=4096 YIELD_EVERY=64 REPEATS=3 PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
 ```
 
+`run_all.sh` defaults to JMH for CE JVM benchmarks (`CE_JVM_ENGINE=jmh`) to improve warmup and measurement stability.
+You can tune JMH iterations/forks:
+
+```bash
+WARMUP_ITERS=5 MEASURE_ITERS=8 FORKS=1 PATH="$PWD/.venv/bin:$PATH" ./run_all.sh
+```
+
 Outputs:
 - Raw per-runtime CSVs in `benchmarks/results/raw/`
 - Combined CSV: `benchmarks/results/raw/all.csv`
 - Combined charts:
   - `benchmarks/results/time-vs-tasks.png` (linear)
   - `benchmarks/results/time-vs-tasks-log.png` (log)
-- Per-runtime charts (linear only; expected 7 series = rust + 3 parallel + 3 concurrent):
+- Per-runtime charts (linear only; 7 series = rust + 3 parallel + 3 concurrent):
   - `benchmarks/results/time-vs-tasks-tokio-rust.png`
   - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm-parallel.png`
   - `benchmarks/results/time-vs-tasks-ce2.5.5-jvm-concurrent.png`
