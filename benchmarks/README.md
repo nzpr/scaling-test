@@ -1,5 +1,7 @@
 # Scheduling Scalability Benchmarks
 
+Presentation-ready summary (method + results): [README_PRESENTATION.md](README_PRESENTATION.md)
+
 This benchmark suite compares time spent vs number of tasks for stack-safe Fibonacci workloads across:
 - Cats Effect 2.5.5 on JVM
 - Cats Effect 3.7.0 on JVM
