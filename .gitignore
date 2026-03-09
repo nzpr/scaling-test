@@ -10,3 +10,4 @@ evolution/
 .venv/
 **/target/
 benchmarks/results/smoke/
+skill/
